@@ -1,3 +1,0 @@
-/home/ubuntu/zed-opencv/cpp/build/CMakeFiles/ZED_with_OpenCV.dir
-/home/ubuntu/zed-opencv/cpp/build/CMakeFiles/edit_cache.dir
-/home/ubuntu/zed-opencv/cpp/build/CMakeFiles/rebuild_cache.dir
