@@ -8,8 +8,8 @@ class TimerTicTok:
     def __init__(self, window_seconds=1.0):
         self.prev = time.perf_counter()
         self.dt = 0.0
-        self.timestamps = deque()
         self.window_seconds = window_seconds
+        self.timestamps = []
 
     def update(self):
         now = time.perf_counter()
@@ -20,8 +20,7 @@ class TimerTicTok:
         self.timestamps.append(now)
 
         # Remove timestamps that are outside the window
-        while self.timestamps and (now - self.timestamps[0]) > self.window_seconds:
-            self.timestamps.popleft()
+        self.timestamps = [t for t in self.timestamps if (now - t) <= self.window_seconds]
 
     def pprint(self):
         # Calculate average frequency based on the number of timestamps in the window
@@ -31,7 +30,7 @@ class TimerTicTok:
             average_freq = (num_updates - 1) / total_time if total_time > 0 else 0.0
         else:
             average_freq = 0.0
-        
+
         print(f"dt = {self.dt:.2f} sec, freq = {1.0 / self.dt:.2f} Hz, avg freq = {average_freq:.2f} Hz")
 
 
