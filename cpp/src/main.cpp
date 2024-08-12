@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
 #endif
             // Retrieve the RGBA point cloud in half-resolution
             // To learn how to manipulate and display point clouds, see Depth Sensing sample
-            zed.retrieveMeasure(point_cloud, MEASURE::XYZRGBA, MEM::CPU, new_image_size);
+            //zed.retrieveMeasure(point_cloud, MEASURE::XYZRGBA, MEM::CPU, new_image_size);
 
             // Display image and depth using cv:Mat which share sl:Mat data
             cv::imshow("Image", image_ocv);
