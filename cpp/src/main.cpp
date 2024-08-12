@@ -22,6 +22,7 @@
  ** This sample demonstrates how to use the ZED SDK with OpenCV. 					  	      **
  ** Depth and images are captured with the ZED SDK, converted to OpenCV format and displayed. **
  ***********************************************************************************************/
+#include <iostream>
 
  // ZED includes
 #include <sl/Camera.hpp>
@@ -38,11 +39,34 @@
 
 using namespace sl;
 cv::Mat slMat2cvMat(Mat& input);
-#ifdef HAVE_CUDA
+// #ifdef HAVE_CUDA
 cv::cuda::GpuMat slMat2cvMatGPU(Mat& input);
-#endif // HAVE_CUDA
+// #endif // HAVE_CUDA
 
 void printHelp();
+
+class TimerTicTok {
+public:
+    TimerTicTok() {
+        prev = std::chrono::high_resolution_clock::now();
+    }
+
+    void update() {
+        auto now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapse = now - prev;
+        prev = now;
+        dt = elapse.count();
+    }
+
+    void pprint() {
+        // print up to 2 decimal places
+        std::cout << "dt = " << dt << " sec, freq = " << 1.0 / dt << " Hz" << std::endl;
+    }
+
+private:
+    std::chrono::high_resolution_clock::time_point prev;
+    double dt;
+};
 
 int main(int argc, char **argv) {
 
@@ -51,8 +75,9 @@ int main(int argc, char **argv) {
 
     // Set configuration parameters
     InitParameters init_params;
-    init_params.camera_resolution = RESOLUTION::HD1080;
-    init_params.depth_mode = DEPTH_MODE::ULTRA;
+    init_params.camera_resolution = RESOLUTION::HD720;
+    init_params.camera_fps = 60;
+    init_params.depth_mode = DEPTH_MODE::PERFORMANCE;
     init_params.coordinate_units = UNIT::METER;
     if (argc > 1) init_params.input.setFromSVOFile(argv[1]);
         
@@ -94,16 +119,20 @@ int main(int argc, char **argv) {
 
     // Loop until 'q' is pressed
     char key = ' ';
+    TimerTicTok timer;
     while (key != 'q') {
 
         if (zed.grab(runtime_parameters) == ERROR_CODE::SUCCESS) {
-
+            timer.update();
+            timer.pprint();
             // Retrieve the left image, depth image in half-resolution
             zed.retrieveImage(image_zed, VIEW::LEFT, MEM::CPU, new_image_size);
 #ifndef HAVE_CUDA 
             // retrieve CPU -> the ocv reference is therefore updated
+            std::cout << "Using CPU memory" << std::endl;
             zed.retrieveImage(depth_image_zed, VIEW::DEPTH, MEM::CPU, new_image_size);
 #else
+            std::cout << "Using GPU memory" << std::endl;
             // retrieve GPU -> the ocv reference is therefore updated
             zed.retrieveImage(depth_image_zed_gpu, VIEW::DEPTH, MEM::GPU, new_image_size);
 #endif
@@ -159,7 +188,7 @@ cv::Mat slMat2cvMat(Mat& input) {
     return cv::Mat(input.getHeight(), input.getWidth(), getOCVtype(input.getDataType()), input.getPtr<sl::uchar1>(MEM::CPU), input.getStepBytes(sl::MEM::CPU));
 }
 
-#ifdef HAVE_CUDA
+
 /**
 * Conversion function between sl::Mat and cv::Mat
 **/
@@ -168,7 +197,7 @@ cv::cuda::GpuMat slMat2cvMatGPU(Mat& input) {
     // cv::Mat and sl::Mat will share a single memory structure
     return cv::cuda::GpuMat(input.getHeight(), input.getWidth(), getOCVtype(input.getDataType()), input.getPtr<sl::uchar1>(MEM::GPU), input.getStepBytes(sl::MEM::GPU));
 }
-#endif
+
 
 /**
 * This function displays help in console
