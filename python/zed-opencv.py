@@ -2,22 +2,6 @@ import sys
 import numpy as np
 import pyzed.sl as sl
 import cv2
-import time
-
-class TimerTicTok:
-    def __init__(self):
-        self.prev = time.perf_counter()
-        self.dt = 0.0
-
-    def update(self):
-        now = time.perf_counter()
-        self.dt = now - self.prev
-        self.prev = now
-
-    def pprint(self):
-        # print up to 2 decimal places
-        print(f"dt = {self.dt:.2f} sec, freq = {1.0 / self.dt:.2f} Hz")
-
 
 help_string = "[s] Save side by side image [d] Save Depth, [n] Change Depth format, [p] Save Point Cloud, [m] Change Point Cloud format, [q] Quit"
 prefix_point_cloud = "Cloud_"
@@ -135,8 +119,7 @@ def main() :
     if len(sys.argv) >= 2 :
         input_type.set_from_svo_file(sys.argv[1])
     init = sl.InitParameters(input_t=input_type)
-    init.camera_resolution = sl.RESOLUTION.HD720
-    init.camera_fps = 60
+    init.camera_resolution = sl.RESOLUTION.HD1080
     init.depth_mode = sl.DEPTH_MODE.PERFORMANCE
     init.coordinate_units = sl.UNIT.MILLIMETER
 
@@ -150,14 +133,23 @@ def main() :
     # Display help in console
     print_help()
 
+    # Set runtime parameters after opening the camera
+    runtime = sl.RuntimeParameters()
+
+    # Prepare new image size to retrieve half-resolution images
+    image_size = zed.get_camera_information().camera_configuration.resolution
+    image_size.width = image_size.width /2
+    image_size.height = image_size.height /2
+
+    # Declare your sl.Mat matrices
+    image_zed = sl.Mat(image_size.width, image_size.height, sl.MAT_TYPE.U8_C4)
+    depth_image_zed = sl.Mat(image_size.width, image_size.height, sl.MAT_TYPE.U8_C4)
+    point_cloud = sl.Mat()
+
     key = ' '
-    timer = TimerTicTok()
     while key != 113 :
         err = zed.grab(runtime)
         if err == sl.ERROR_CODE.SUCCESS :
-            timer.update()
-            timer.pprint()
-
             # Retrieve the left image, depth image in the half-resolution
             zed.retrieve_image(image_zed, sl.VIEW.LEFT, sl.MEM.CPU, image_size)
             zed.retrieve_image(depth_image_zed, sl.VIEW.DEPTH, sl.MEM.CPU, image_size)
