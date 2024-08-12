@@ -1,3 +1,7 @@
+# Ubicoders Update
+- ZED PYTHON API: pyzed DOES NOT support GPU
+
+
 # Stereolabs ZED - OpenCV Python
 
 This sample is the perfect place to get started coding with the ZED and OpenCV. It shows how to:
