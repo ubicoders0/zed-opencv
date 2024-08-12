@@ -149,8 +149,6 @@ def main() :
 
     # Display help in console
     print_help()
-# Ubicoders Update
-- ZED PYTHON API: pyzed DOES NOT support GPU
 
     key = ' '
     timer = TimerTicTok()
