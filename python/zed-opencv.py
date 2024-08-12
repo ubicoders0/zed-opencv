@@ -150,7 +150,8 @@ def main() :
     if len(sys.argv) >= 2 :
         input_type.set_from_svo_file(sys.argv[1])
     init = sl.InitParameters(input_t=input_type)
-    init.camera_resolution = sl.RESOLUTION.HD1080
+    init.camera_resolution = sl.RESOLUTION.HD720
+    init.camera_fps = 60
     init.depth_mode = sl.DEPTH_MODE.PERFORMANCE
     init.coordinate_units = sl.UNIT.MILLIMETER
 
@@ -188,7 +189,7 @@ def main() :
             zed.retrieve_image(image_zed, sl.VIEW.LEFT, sl.MEM.CPU, image_size)
             zed.retrieve_image(depth_image_zed, sl.VIEW.DEPTH, sl.MEM.CPU, image_size)
             # Retrieve the RGBA point cloud in half resolution
-            zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA, sl.MEM.CPU, image_size)
+            #zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA, sl.MEM.CPU, image_size)
 
             # To recover data from sl.Mat to use it with opencv, use the get_data() method
             # It returns a numpy array that can be used as a matrix with opencv
@@ -198,7 +199,7 @@ def main() :
             cv2.imshow("Image", image_ocv)
             cv2.imshow("Depth", depth_image_ocv)
 
-            key = cv2.waitKey(10)
+            key = cv2.waitKey(1)
 
             process_key_event(zed, key)
 
